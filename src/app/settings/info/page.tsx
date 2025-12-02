@@ -50,10 +50,11 @@ export default function VersionPage() {
                                         } else {
                                             alert('실패했습니다.');
                                         }
-                                    } catch (e) {
-                                        alert('오류가 발생했습니다: ' + e);
                                     }
-                                }}
+                                } catch (e) {
+                                    alert('오류가 발생했습니다: ' + e);
+                                }
+                            }}
                             className="w-full py-3 rounded-xl bg-dream-cyan/10 text-dream-cyan font-medium text-sm hover:bg-dream-cyan/20 transition-colors"
                         >
                             🔔 알림 테스트 발송
