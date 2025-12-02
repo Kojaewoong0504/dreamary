@@ -9,9 +9,9 @@ interface MobileLayoutProps {
     children: ReactNode;
 }
 
-import { NotificationProvider, useNotification } from "@/contexts/NotificationContext";
+import { useNotification } from "@/contexts/NotificationContext";
 
-function MobileLayoutInner({ children }: MobileLayoutProps) {
+export default function MobileLayout({ children }: MobileLayoutProps) {
     const [toast, setToast] = useState<{ title: string; body: string; visible: boolean }>({ title: '', body: '', visible: false });
     const { refreshUnreadCount } = useNotification();
 
@@ -104,13 +104,5 @@ function MobileLayoutInner({ children }: MobileLayoutProps) {
                 </AnimatePresence>
             </main>
         </div>
-    );
-}
-
-export default function MobileLayout({ children }: MobileLayoutProps) {
-    return (
-        <NotificationProvider>
-            <MobileLayoutInner>{children}</MobileLayoutInner>
-        </NotificationProvider>
     );
 }

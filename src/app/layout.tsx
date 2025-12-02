@@ -21,6 +21,8 @@ export const viewport: Viewport = {
 
 import GoogleAdSense from "@/components/ads/GoogleAdSense";
 
+import { NotificationProvider } from "@/contexts/NotificationContext";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -31,7 +33,9 @@ export default function RootLayout({
 
             <body className={`${inter.className} bg-black text-white antialiased overflow-hidden`}>
                 <GoogleAdSense pId={process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || ""} />
-                {children}
+                <NotificationProvider>
+                    {children}
+                </NotificationProvider>
             </body>
         </html>
     );
