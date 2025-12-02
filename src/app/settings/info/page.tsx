@@ -48,18 +48,30 @@ export default function VersionPage() {
                                         if (data.fcmResult?.success) {
                                             alert(`성공! FCM ID: ${data.fcmResult.messageId}\n(목록에도 저장됨)`);
                                         } else {
-                                            alert(`DB저장 성공, FCM 실패:\n${JSON.stringify(data.fcmResult?.error)}`);
+                                            alert('실패했습니다.');
                                         }
-                                    } else {
-                                        alert('실패했습니다.');
+                                    } catch (e) {
+                                        alert('오류가 발생했습니다: ' + e);
                                     }
-                                } catch (e) {
-                                    alert('오류가 발생했습니다: ' + e);
-                                }
-                            }}
+                                }}
                             className="w-full py-3 rounded-xl bg-dream-cyan/10 text-dream-cyan font-medium text-sm hover:bg-dream-cyan/20 transition-colors"
                         >
                             🔔 알림 테스트 발송
+                        </button>
+
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const res = await fetch('/api/debug/firebase');
+                                    const data = await res.json();
+                                    alert(JSON.stringify(data, null, 2));
+                                } catch (e) {
+                                    alert('Error: ' + e);
+                                }
+                            }}
+                            className="w-full py-3 rounded-xl bg-white/5 text-white/70 font-medium text-sm hover:bg-white/10 transition-colors"
+                        >
+                            🛠️ 서버 설정 확인
                         </button>
                     </div>
                 </div>
