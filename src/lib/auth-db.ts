@@ -347,7 +347,7 @@ export const createNotification = async (userId: string, type: string, message: 
 };
 
 export const getNotifications = async (userId: string) => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
         .from('notifications')
         .select(`
             *,
