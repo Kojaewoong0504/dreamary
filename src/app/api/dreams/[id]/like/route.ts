@@ -22,27 +22,29 @@ async function getUserId(req: Request) {
     return userId;
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const userId = await getUserId(req);
         if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { liked, error } = await toggleLike(userId, params.id);
+        const { id } = await params;
+        const { liked, error } = await toggleLike(userId, id);
         if (error) throw error;
 
         return NextResponse.json({ liked });
     } catch (error) {
-        console.error('Like toggle error:', error);
+        console.error('Toggle like error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const userId = await getUserId(req);
-        if (!userId) return NextResponse.json({ liked: false });
+        if (!userId) return NextResponse.json({ liked: false }); // Not logged in
 
-        const { liked, error } = await getLikeStatus(userId, params.id);
+        const { id } = await params;
+        const { liked, error } = await getLikeStatus(userId, id);
         if (error) throw error;
 
         return NextResponse.json({ liked });
