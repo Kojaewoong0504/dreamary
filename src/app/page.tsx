@@ -13,24 +13,33 @@ import { useState, useEffect } from "react";
 export default function Home() {
     const [recentDreams, setRecentDreams] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [hasUnread, setHasUnread] = useState(false);
 
     useEffect(() => {
-        const fetchRecentDreams = async () => {
+        const fetchData = async () => {
             try {
-                const res = await fetch('/api/user/dreams');
-                if (res.ok) {
-                    const data = await res.json();
-                    // Take only top 2
+                // Fetch Recent Dreams
+                const dreamsRes = await fetch('/api/user/dreams');
+                if (dreamsRes.ok) {
+                    const data = await dreamsRes.json();
                     setRecentDreams(data.dreams?.slice(0, 2) || []);
                 }
+
+                // Fetch Notifications to check unread
+                const notiRes = await fetch('/api/notifications');
+                if (notiRes.ok) {
+                    const data = await notiRes.json();
+                    const unread = data.notifications?.some((n: any) => !n.read);
+                    setHasUnread(unread);
+                }
             } catch (error) {
-                console.error('Failed to fetch recent dreams:', error);
+                console.error('Failed to fetch data:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchRecentDreams();
+        fetchData();
     }, []);
     return (
         <MobileLayout>
@@ -51,7 +60,9 @@ export default function Home() {
                         </Link>
                         <Link href="/notifications" className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md relative">
                             <Bell size={16} className="text-white/70" />
-                            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                            {hasUnread && (
+                                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                            )}
                         </Link>
                     </div>
                 </header>

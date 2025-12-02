@@ -46,6 +46,31 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const { data, error } = await addComment(userId, id, content);
         if (error) throw error;
 
+        // Send Notification
+        const { getDreamById } = await import('@/lib/auth-db');
+        const { data: dream } = await getDreamById(id);
+
+        if (dream && dream.user_id !== userId) {
+            // 1. Save to Database
+            const { createNotification } = await import('@/lib/auth-db');
+            await createNotification(
+                dream.user_id,
+                'comment',
+                `"${dream.title}" 꿈에 댓글이 달렸습니다.`,
+                `/dream/${id}`,
+                userId
+            );
+
+            // 2. Send Push Notification
+            const { sendNotification } = await import('@/lib/notification');
+            await sendNotification(
+                dream.user_id,
+                '새로운 댓글이 달렸습니다! 💬',
+                `"${dream.title}" 꿈에 댓글이 달렸습니다: "${content.substring(0, 20)}${content.length > 20 ? '...' : ''}"`,
+                `/dream/${id}`
+            );
+        }
+
         return NextResponse.json({ comment: data });
     } catch (error) {
         console.error('Add comment error:', error);

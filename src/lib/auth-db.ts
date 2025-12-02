@@ -327,3 +327,52 @@ export const deleteComment = async (commentId: string, userId: string) => {
 
     return { error };
 };
+
+export const createNotification = async (userId: string, type: string, message: string, link: string, senderId: string | null = null) => {
+    const { data, error } = await supabaseAdmin
+        .from('notifications')
+        .insert([{
+            user_id: userId,
+            type,
+            message,
+            link,
+            sender_id: senderId,
+            read: false
+        }]);
+
+    if (error) {
+        console.error("🔥 createNotification DB Error:", error);
+    }
+    return { data, error };
+};
+
+export const getNotifications = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('notifications')
+        .select(`
+            *,
+            sender:sender_id(nickname, avatar_url)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+    return { data, error };
+};
+
+export const markNotificationsAsRead = async (userId: string) => {
+    const { data, error } = await supabaseAdmin
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', userId)
+        .eq('read', false); // Only update unread ones
+    return { data, error };
+};
+
+export const updateUserFcmToken = async (userId: string, token: string) => {
+    const { data, error } = await supabaseAdmin
+        .from('users')
+        .update({ fcm_token: token })
+        .eq('id', userId)
+        .select();
+
+    return { data, error };
+};

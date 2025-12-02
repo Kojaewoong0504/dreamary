@@ -31,6 +31,36 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const { liked, error } = await toggleLike(userId, id);
         if (error) throw error;
 
+        // Send Notification if Liked
+        if (liked) {
+            // We need to fetch the dream owner to notify them
+            // Importing getDreamById here might be circular or heavy, let's just use a quick query or helper
+            // Actually, let's use getDreamById from auth-db
+            const { getDreamById } = await import('@/lib/auth-db');
+            const { data: dream } = await getDreamById(id);
+
+            if (dream && dream.user_id !== userId) { // Don't notify self
+                // 1. Save to Database
+                const { createNotification } = await import('@/lib/auth-db');
+                await createNotification(
+                    dream.user_id,
+                    'like',
+                    `"${dream.title}" 꿈에 좋아요가 눌렸습니다.`,
+                    `/dream/${id}`,
+                    userId
+                );
+
+                // 2. Send Push Notification
+                const { sendNotification } = await import('@/lib/notification');
+                await sendNotification(
+                    dream.user_id,
+                    '누군가 당신의 꿈을 좋아합니다! ❤️',
+                    `"${dream.title}" 꿈에 좋아요가 눌렸습니다.`,
+                    `/dream/${id}`
+                );
+            }
+        }
+
         return NextResponse.json({ liked });
     } catch (error) {
         console.error('Toggle like error:', error);
