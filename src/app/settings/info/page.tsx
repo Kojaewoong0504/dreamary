@@ -39,46 +39,6 @@ export default function VersionPage() {
                             <span className="text-sm font-medium text-white/90">1.0.0</span>
                         </div>
 
-                        <button
-                            onClick={async () => {
-                                try {
-                                    alert("5초 뒤에 알림이 발송됩니다!\n확인을 누르고 즉시 앱을 닫아보세요 (홈 화면으로 이동).");
-                                    const res = await fetch('/api/test-notification', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ delay: 5 })
-                                    });
-                                    const data = await res.json();
-                                    if (res.ok) {
-                                        if (data.fcmResult?.success) {
-                                            console.log(`성공! FCM ID: ${data.fcmResult.messageId}`);
-                                        } else {
-                                            console.error(`FCM 실패: ${JSON.stringify(data.fcmResult?.error)}`);
-                                        }
-                                    }
-                                } catch (e) {
-                                    alert('오류가 발생했습니다: ' + e);
-                                }
-                            }}
-                            className="w-full py-3 rounded-xl bg-dream-cyan/10 text-dream-cyan font-medium text-sm hover:bg-dream-cyan/20 transition-colors"
-                        >
-                            🔔 5초 후 알림 발송 (백그라운드 테스트)
-                        </button>
-
-                        <button
-                            onClick={async () => {
-                                try {
-                                    const res = await fetch('/api/debug/firebase');
-                                    const data = await res.json();
-                                    alert(JSON.stringify(data, null, 2));
-                                } catch (e) {
-                                    alert('Error: ' + e);
-                                }
-                            }}
-                            className="w-full py-3 rounded-xl bg-white/5 text-white/70 font-medium text-sm hover:bg-white/10 transition-colors"
-                        >
-                            🛠️ 서버 설정 확인
-                        </button>
                     </div>
                 </div>
             </div>

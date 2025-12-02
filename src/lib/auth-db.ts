@@ -1,4 +1,5 @@
 import { supabase, supabaseAdmin } from './supabase';
+export { supabaseAdmin };
 
 
 // Assuming a 'users' table exists in Supabase with:
