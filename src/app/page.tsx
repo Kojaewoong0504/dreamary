@@ -10,10 +10,12 @@ import Link from "next/link";
 
 import { useState, useEffect } from "react";
 
+import { useNotification } from "@/contexts/NotificationContext";
+
 export default function Home() {
     const [recentDreams, setRecentDreams] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [hasUnread, setHasUnread] = useState(false);
+    const { hasUnread } = useNotification(); // Use global state
 
     useEffect(() => {
         const fetchData = async () => {
@@ -23,14 +25,6 @@ export default function Home() {
                 if (dreamsRes.ok) {
                     const data = await dreamsRes.json();
                     setRecentDreams(data.dreams?.slice(0, 2) || []);
-                }
-
-                // Fetch Notifications to check unread
-                const notiRes = await fetch('/api/notifications');
-                if (notiRes.ok) {
-                    const data = await notiRes.json();
-                    const unread = data.notifications?.some((n: any) => !n.read);
-                    setHasUnread(unread);
                 }
             } catch (error) {
                 console.error('Failed to fetch data:', error);

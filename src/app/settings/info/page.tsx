@@ -42,13 +42,18 @@ export default function VersionPage() {
                         <button
                             onClick={async () => {
                                 try {
-                                    const res = await fetch('/api/test-notification', { method: 'POST' });
+                                    alert("5초 뒤에 알림이 발송됩니다!\n확인을 누르고 즉시 앱을 닫아보세요 (홈 화면으로 이동).");
+                                    const res = await fetch('/api/test-notification', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ delay: 5 })
+                                    });
                                     const data = await res.json();
                                     if (res.ok) {
                                         if (data.fcmResult?.success) {
-                                            alert(`성공! FCM ID: ${data.fcmResult.messageId}\n(목록에도 저장됨)`);
+                                            console.log(`성공! FCM ID: ${data.fcmResult.messageId}`);
                                         } else {
-                                            alert('실패했습니다.');
+                                            console.error(`FCM 실패: ${JSON.stringify(data.fcmResult?.error)}`);
                                         }
                                     }
                                 } catch (e) {
@@ -57,7 +62,7 @@ export default function VersionPage() {
                             }}
                             className="w-full py-3 rounded-xl bg-dream-cyan/10 text-dream-cyan font-medium text-sm hover:bg-dream-cyan/20 transition-colors"
                         >
-                            🔔 알림 테스트 발송
+                            🔔 5초 후 알림 발송 (백그라운드 테스트)
                         </button>
 
                         <button

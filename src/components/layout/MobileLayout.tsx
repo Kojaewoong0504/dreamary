@@ -9,16 +9,17 @@ interface MobileLayoutProps {
     children: ReactNode;
 }
 
-export default function MobileLayout({ children }: MobileLayoutProps) {
+import { NotificationProvider, useNotification } from "@/contexts/NotificationContext";
+
+function MobileLayoutInner({ children }: MobileLayoutProps) {
     const [toast, setToast] = useState<{ title: string; body: string; visible: boolean }>({ title: '', body: '', visible: false });
+    const { refreshUnreadCount } = useNotification();
 
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (session?.user) {
-                // Check if we already have the refreshToken cookie? 
-                // Client can't check HTTP-only cookie easily.
-                // We'll just hit the endpoint. It's safe to be idempotent.
                 if (event === 'SIGNED_IN') {
+                    refreshUnreadCount(); // Refresh on sign in
                     try {
                         await fetch("/api/auth/social", {
                             method: "POST",
@@ -30,12 +31,10 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                     }
                 }
 
-                // Request Notification Permission & Save Token (Run always if session exists)
                 try {
                     // 1. Request Permission & Save Token
                     const { requestNotificationPermission } = await import("@/lib/firebase");
                     const token = await requestNotificationPermission();
-                    if (!token) console.log("❌ No FCM Token obtained. Permission denied or insecure context?");
                     if (token) {
                         await fetch('/api/user/fcm-token', {
                             method: 'POST',
@@ -53,16 +52,21 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                         const { onMessage } = await import('firebase/messaging');
                         onMessage(msg, (payload) => {
                             console.log('🚨 Foreground Message Received:', payload);
+
+                            // Show Toast
                             setToast({
                                 title: payload.notification?.title || '알림',
                                 body: payload.notification?.body || '',
                                 visible: true
                             });
-                            setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+
+                            // Refresh Badge
+                            refreshUnreadCount();
+
+                            // Hide after 5 seconds (Increased duration)
+                            setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 5000);
                         });
                         console.log("✅ Foreground listener attached!");
-                    } else {
-                        console.log("❌ Firebase Messaging not supported in this browser.");
                     }
                 } catch (e) {
                     console.error("🔥 Token exchange or FCM failed", e);
@@ -71,7 +75,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
         });
 
         return () => subscription.unsubscribe();
-    }, []);
+    }, [refreshUnreadCount]);
 
     return (
         <div className="min-h-screen bg-dream-dark text-white font-sans selection:bg-dream-cyan/30 selection:text-white">
@@ -86,18 +90,27 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                             animate={{ opacity: 1, y: 0, x: "-50%" }}
                             exit={{ opacity: 0, y: -50, x: "-50%" }}
                             className="fixed top-4 left-1/2 w-[90%] max-w-sm bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl shadow-xl z-50 flex items-center gap-3"
+                            onClick={() => setToast(prev => ({ ...prev, visible: false }))}
                         >
-                            <div className="w-10 h-10 rounded-full bg-dream-cyan/20 flex items-center justify-center text-dream-cyan">
+                            <div className="w-10 h-10 rounded-full bg-dream-cyan/20 flex items-center justify-center text-dream-cyan flex-shrink-0">
                                 <Bell size={20} />
                             </div>
-                            <div>
-                                <h4 className="font-bold text-sm text-white">{toast.title}</h4>
-                                <p className="text-xs text-white/80">{toast.body}</p>
+                            <div className="flex-1 min-w-0">
+                                <h4 className="font-bold text-sm text-white truncate">{toast.title}</h4>
+                                <p className="text-xs text-white/80 line-clamp-2">{toast.body}</p>
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </main>
         </div>
+    );
+}
+
+export default function MobileLayout({ children }: MobileLayoutProps) {
+    return (
+        <NotificationProvider>
+            <MobileLayoutInner>{children}</MobileLayoutInner>
+        </NotificationProvider>
     );
 }

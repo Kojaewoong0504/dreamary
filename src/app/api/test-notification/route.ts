@@ -29,6 +29,18 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Parse body for delay
+        let delay = 0;
+        try {
+            const body = await req.json().catch(() => ({}));
+            if (body.delay) delay = body.delay;
+        } catch (e) { }
+
+        if (delay > 0) {
+            console.log(`Waiting ${delay} seconds before sending...`);
+            await new Promise(resolve => setTimeout(resolve, delay * 1000));
+        }
+
         // 1. Save to Database
         const { createNotification } = await import('@/lib/auth-db');
         await createNotification(
