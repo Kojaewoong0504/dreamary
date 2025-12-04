@@ -41,10 +41,21 @@ export async function POST(request: Request) {
         const newRefreshToken = signRefreshToken({ userId: user.id });
 
         // Store Refresh Token (RTR)
-        storeRefreshToken(user.id, newRefreshToken);
+        await storeRefreshToken(user.id, newRefreshToken);
 
-        // Set Refresh Token in HTTP-only cookie
+        // Set Cookies
         const response = NextResponse.json({ accessToken: newAccessToken, user: { id: user.id, email: user.email } });
+
+        // 1. Access Token (Short-lived)
+        response.cookies.set('accessToken', newAccessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/',
+            maxAge: 15 * 60, // 15 minutes
+        });
+
+        // 2. Refresh Token (Long-lived)
         response.cookies.set('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',

@@ -19,9 +19,10 @@ interface FeedCardProps {
         comments: number;
         user_has_liked?: boolean;
     };
+    className?: string;
 }
 
-export default function FeedCard({ user, dream }: FeedCardProps) {
+export default function FeedCard({ user, dream, className = "h-full" }: FeedCardProps) {
     const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
     const [isLiked, setIsLiked] = useState(dream.user_has_liked || false);
     const [likesCount, setLikesCount] = useState(dream.likes);
@@ -130,7 +131,7 @@ export default function FeedCard({ user, dream }: FeedCardProps) {
     };
 
     return (
-        <motion.div className="w-full h-screen snap-start relative bg-black overflow-hidden">
+        <motion.div className={`w-full h-full relative bg-black overflow-hidden flex-shrink-0 ${className}`}>
             {/* Background Image & Carousel */}
             <div className="absolute inset-0 group">
                 {currentImage ? (
@@ -138,8 +139,9 @@ export default function FeedCard({ user, dream }: FeedCardProps) {
                 ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-900 to-black" />
                 )}
-                <div className="absolute inset-0 bg-black/30" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                {/* Enhanced Gradient for better readability */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/90" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
                 {/* Carousel Navigation */}
                 {hasScenes && (
@@ -147,25 +149,25 @@ export default function FeedCard({ user, dream }: FeedCardProps) {
                         <button
                             onClick={(e) => { e.stopPropagation(); setCurrentSceneIndex(prev => Math.max(0, prev - 1)); }}
                             disabled={currentSceneIndex === 0}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 text-white/80 backdrop-blur-md border border-white/10 disabled:opacity-0 transition-all active:scale-95 z-30 opacity-0 group-hover:opacity-100"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 text-white/80 backdrop-blur-sm border border-white/10 disabled:opacity-0 transition-all active:scale-95 z-30"
                         >
-                            <ArrowLeft size={24} />
+                            <ArrowLeft size={20} />
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); setCurrentSceneIndex(prev => Math.min(dream.scenes!.length - 1, prev + 1)); }}
                             disabled={currentSceneIndex === dream.scenes!.length - 1}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 text-white/80 backdrop-blur-md border border-white/10 disabled:opacity-0 transition-all active:scale-95 z-30 opacity-0 group-hover:opacity-100"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 text-white/80 backdrop-blur-sm border border-white/10 disabled:opacity-0 transition-all active:scale-95 z-30"
                         >
-                            <ArrowLeft size={24} className="rotate-180" />
+                            <ArrowLeft size={20} className="rotate-180" />
                         </button>
                     </>
                 )}
             </div>
 
-            {/* Right Side Actions */}
-            <div className="absolute right-4 bottom-28 flex flex-col items-center gap-6 z-10">
-                <div className="flex flex-col items-center gap-1">
-                    <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/90 hover:bg-white/20 transition-colors cursor-pointer overflow-hidden border border-white/20">
+            {/* Right Side Actions - Stacked Vertically */}
+            <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-20">
+                <div className="flex flex-col items-center gap-1 mb-2">
+                    <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/90 hover:bg-white/20 transition-colors cursor-pointer overflow-hidden border border-white/20 shadow-lg">
                         {isAvatarUrl ? (
                             <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                         ) : (
@@ -177,51 +179,55 @@ export default function FeedCard({ user, dream }: FeedCardProps) {
                 </div>
 
                 <button onClick={handleLike} className="flex flex-col items-center gap-1 group">
-                    <div className="p-3 rounded-full bg-white/10 backdrop-blur-md group-hover:bg-white/20 transition-colors">
-                        <Heart size={24} className={`transition-transform group-hover:scale-110 ${isLiked ? "fill-red-500 text-red-500" : "text-white"}`} />
+                    <div className="p-2 transition-transform active:scale-90">
+                        <Heart size={28} className={`drop-shadow-lg ${isLiked ? "fill-red-500 text-red-500" : "text-white"}`} />
                     </div>
                     <span className="text-xs font-medium text-white shadow-black drop-shadow-md">{likesCount}</span>
                 </button>
 
                 <button onClick={() => { setShowComments(true); fetchComments(); }} className="flex flex-col items-center gap-1 group">
-                    <div className="p-3 rounded-full bg-white/10 backdrop-blur-md group-hover:bg-white/20 transition-colors">
-                        <MessageCircle size={24} className="text-white group-hover:scale-110 transition-transform" />
+                    <div className="p-2 transition-transform active:scale-90">
+                        <MessageCircle size={28} className="text-white drop-shadow-lg" />
                     </div>
                     <span className="text-xs font-medium text-white shadow-black drop-shadow-md">{dream.comments}</span>
                 </button>
 
                 <button onClick={handleShare} className="flex flex-col items-center gap-1 group">
-                    <div className="p-3 rounded-full bg-white/10 backdrop-blur-md group-hover:bg-white/20 transition-colors">
-                        <Share2 size={24} className="text-white group-hover:scale-110 transition-transform" />
+                    <div className="p-2 transition-transform active:scale-90">
+                        <Share2 size={28} className="text-white drop-shadow-lg" />
                     </div>
                     <span className="text-xs font-medium text-white shadow-black drop-shadow-md">공유</span>
                 </button>
 
-                <button onClick={() => setShowMoreMenu(true)} className="p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 transition-colors mt-2">
-                    <MoreHorizontal size={24} className="text-white" />
+                <button onClick={() => setShowMoreMenu(true)} className="p-2 mt-2 transition-transform active:scale-90">
+                    <MoreHorizontal size={24} className="text-white drop-shadow-lg" />
                 </button>
             </div>
 
-            {/* Bottom Content */}
-            <div className="absolute left-0 right-16 bottom-28 px-5 z-10">
+            {/* Bottom Content - Left Aligned */}
+            <div className="absolute left-4 right-16 bottom-8 z-20 flex flex-col justify-end">
                 {hasScenes && (
-                    <div className="flex gap-1 mb-2">
+                    <div className="flex gap-1 mb-3">
                         {dream.scenes!.map((_, idx) => (
-                            <div key={idx} className={`h-1 rounded-full transition-all ${idx === currentSceneIndex ? "bg-dream-cyan w-6" : "bg-white/30 w-2"}`} />
+                            <div key={idx} className={`h-1 rounded-full transition-all shadow-sm ${idx === currentSceneIndex ? "bg-dream-cyan w-6" : "bg-white/40 w-2"}`} />
                         ))}
                     </div>
                 )}
-                <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm font-bold text-white drop-shadow-md">@{user.name}</span>
-                    <span className="text-xs text-white/60">• {user.time}</span>
+
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base font-bold text-white drop-shadow-md">@{user.name}</span>
+                    <span className="text-xs text-white/70 drop-shadow-md">• {user.time}</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2 leading-tight drop-shadow-lg">{dream.title}</h3>
-                <p className="text-sm text-white/80 line-clamp-3 mb-3 leading-relaxed drop-shadow-md">
+
+                <h3 className="text-lg font-bold text-white mb-2 leading-tight drop-shadow-lg line-clamp-1">{dream.title}</h3>
+
+                <p className="text-sm text-white/90 line-clamp-2 mb-3 leading-relaxed drop-shadow-md max-w-[90%]">
                     {hasScenes ? dream.scenes![currentSceneIndex].description : dream.content}
                 </p>
+
                 <div className="flex flex-wrap gap-2">
                     {dream.tags.map((tag, i) => (
-                        <span key={i} className="text-[10px] px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm text-dream-cyan border border-white/10 font-medium">#{tag}</span>
+                        <span key={i} className="text-[10px] px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-dream-cyan border border-white/10 font-medium shadow-sm">#{tag}</span>
                     ))}
                 </div>
             </div>
@@ -281,7 +287,7 @@ export default function FeedCard({ user, dream }: FeedCardProps) {
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="absolute bottom-0 left-0 right-0 h-[60vh] bg-[#1A1A24] rounded-t-3xl z-50 flex flex-col shadow-2xl border-t border-white/10"
+                            className="absolute bottom-0 left-0 right-0 h-[70vh] bg-[#1A1A24] rounded-t-3xl z-50 flex flex-col shadow-2xl border-t border-white/10"
                         >
                             <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
                                 <h3 className="text-white font-bold text-lg">댓글 <span className="text-dream-cyan">{comments.length}</span></h3>

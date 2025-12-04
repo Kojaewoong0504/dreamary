@@ -109,6 +109,41 @@ export const updateUserPassword = async (userId: string, passwordHash: string) =
     return { data, error };
 };
 
+// Refresh Token Management (RTR)
+export const storeUserRefreshToken = async (userId: string, token: string) => {
+    // We'll store the refresh token in the 'users' table.
+    // Assuming a 'refresh_token' column exists. If not, this will fail and we'll need to add it.
+    const { data, error } = await supabaseAdmin
+        .from('users')
+        .update({ refresh_token: token })
+        .eq('id', userId)
+        .select()
+        .single();
+
+    return { data, error };
+};
+
+export const getUserRefreshToken = async (userId: string) => {
+    const { data, error } = await supabaseAdmin
+        .from('users')
+        .select('refresh_token')
+        .eq('id', userId)
+        .single();
+
+    return { token: data?.refresh_token, error };
+};
+
+export const deleteUserRefreshToken = async (userId: string) => {
+    const { data, error } = await supabaseAdmin
+        .from('users')
+        .update({ refresh_token: null })
+        .eq('id', userId)
+        .select()
+        .single();
+
+    return { data, error };
+};
+
 // Dream related functions
 
 export const createDream = async (userId: string, dreamData: any) => {
@@ -376,4 +411,45 @@ export const updateUserFcmToken = async (userId: string, token: string) => {
         .select();
 
     return { data, error };
+};
+
+export const createPaymentRecord = async (userId: string, imp_uid: string, merchant_uid: string, amount: number, status: string) => {
+    const { data, error } = await supabaseAdmin
+        .from('payments')
+        .insert([{
+            user_id: userId,
+            imp_uid,
+            merchant_uid,
+            amount,
+            status
+        }]);
+
+    if (error) {
+        console.error("🔥 createPaymentRecord DB Error:", error);
+    }
+    return { data, error };
+};
+
+export const getUserStats = async (userId: string) => {
+    // Total dreams
+    const { count: totalDreams } = await supabaseAdmin
+        .from('dreams')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+    // This month dreams
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const { count: monthDreams } = await supabaseAdmin
+        .from('dreams')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .gte('created_at', startOfMonth.toISOString());
+
+    return {
+        totalDreams: totalDreams || 0,
+        monthDreams: monthDreams || 0
+    };
 };

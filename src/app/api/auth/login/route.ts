@@ -15,12 +15,19 @@ export async function POST(request: Request) {
         // Find user
         const { data: user } = await findUserByEmail(email);
         if (!user) {
+            console.log("Login failed: User not found for email", email);
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
         // Verify password
+        if (!user.password_hash) {
+            console.log("Login failed: No password hash for user", email);
+            return NextResponse.json({ error: 'Please log in with your social account' }, { status: 400 });
+        }
+
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
         if (!isValidPassword) {
+            console.log("Login failed: Password mismatch for user", email);
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
@@ -29,10 +36,21 @@ export async function POST(request: Request) {
         const refreshToken = signRefreshToken({ userId: user.id });
 
         // Store Refresh Token (RTR)
-        storeRefreshToken(user.id, refreshToken);
+        await storeRefreshToken(user.id, refreshToken);
 
-        // Set Refresh Token in HTTP-only cookie
+        // Set Cookies
         const response = NextResponse.json({ accessToken, user: { id: user.id, email: user.email } });
+
+        // 1. Access Token (Short-lived)
+        response.cookies.set('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/',
+            maxAge: 15 * 60, // 15 minutes
+        });
+
+        // 2. Refresh Token (Long-lived)
         response.cookies.set('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -44,6 +62,7 @@ export async function POST(request: Request) {
         return response;
 
     } catch (error) {
+        console.error("Login API Error:", error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

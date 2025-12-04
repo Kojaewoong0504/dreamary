@@ -19,6 +19,7 @@ export const viewport: Viewport = {
     viewportFit: "cover",
 };
 
+import Script from "next/script";
 import GoogleAdSense from "@/components/ads/GoogleAdSense";
 
 import { NotificationProvider } from "@/contexts/NotificationContext";
@@ -31,8 +32,9 @@ export default function RootLayout({
     return (
         <html lang="ko">
 
-            <body className={`${inter.className} bg-black text-white antialiased overflow-hidden`}>
+            <body className={`${inter.className} bg-black text-white antialiased`} suppressHydrationWarning>
                 <GoogleAdSense pId={process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || ""} />
+                <Script src="https://cdn.portone.io/v2/browser-sdk.js" strategy="lazyOnload" />
                 <NotificationProvider>
                     {children}
                 </NotificationProvider>

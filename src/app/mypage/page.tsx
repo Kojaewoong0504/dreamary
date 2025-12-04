@@ -3,7 +3,7 @@
 import MobileLayout from "@/components/layout/MobileLayout";
 import BottomNav from "@/components/layout/BottomNav";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, User, Star, Zap, Calendar, PlayCircle, X, Lock, Crown, Sparkles } from "lucide-react";
+import { Settings, User, LogOut, ChevronRight, Star, Zap, Calendar, Coins, PlayCircle, Crown, Sparkles, Lock, X, Flame } from "lucide-react";
 import { useState, useEffect } from "react";
 import SettingsModal from "@/components/profile/SettingsModal";
 import Link from "next/link";
@@ -89,7 +89,7 @@ export default function MyPage() {
 
     const stats = [
         { label: "총 꿈 기록", value: userDreams.length.toString(), icon: Star, color: "text-dream-cyan" },
-        { label: "연속 기록", value: "3일", icon: Zap, color: "text-dream-purple" }, // Streak logic needs separate implementation
+        { label: "연속 기록", value: "3일", icon: Flame, color: "text-dream-purple" }, // Streak logic needs separate implementation
         { label: "평균 자각도", value: "4.5", icon: Calendar, color: "text-white" },
     ];
 
@@ -141,7 +141,7 @@ export default function MyPage() {
                     >
                         <div className="glass-panel p-6 rounded-3xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-10">
-                                <Zap size={100} className="text-white" />
+                                <Coins size={100} className="text-white" />
                             </div>
 
                             <div className="relative z-10">
@@ -180,7 +180,7 @@ export default function MyPage() {
                                     href="/shop"
                                     className="w-full py-3 rounded-xl bg-white/10 border border-white/10 text-white font-bold text-sm hover:bg-white/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                                 >
-                                    <Zap size={18} className="text-dream-cyan" />
+                                    <Coins size={18} className="text-yellow-400" />
                                     크레딧 상점 바로가기
                                 </Link>
                             </div>

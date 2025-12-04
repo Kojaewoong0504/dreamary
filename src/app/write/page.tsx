@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Sparkles, Zap, Palette, X, Lock, Globe, PlayCircle } from "lucide-react";
+import { ArrowLeft, Sparkles, Zap, Palette, X, Lock, Globe, PlayCircle, Coins } from "lucide-react";
 import Link from "next/link";
 
 import { styles, models } from "../../lib/constants";
@@ -417,10 +417,10 @@ export default function WritePage() {
                     </h1>
                     <div className="flex items-center gap-2 relative z-10">
                         <Link href="/shop" className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                            <Zap size={12} className="text-dream-cyan fill-dream-cyan" />
+                            <Coins size={12} className="text-yellow-400 fill-yellow-400" />
                             <span className="text-xs font-bold text-white">{credits ?? '-'}</span>
-                            <div className="w-4 h-4 rounded-full bg-dream-cyan/20 flex items-center justify-center ml-1">
-                                <span className="text-[10px] font-bold text-dream-cyan">+</span>
+                            <div className="w-4 h-4 rounded-full bg-yellow-400/20 flex items-center justify-center ml-1">
+                                <span className="text-[10px] font-bold text-yellow-400">+</span>
                             </div>
                         </Link>
                     </div>

@@ -106,7 +106,7 @@ export async function PUT(
         const userId = decoded.userId;
 
         // Filter allowed updates
-        const allowedUpdates = ['title', 'content', 'interpretation', 'is_public', 'tags'];
+        const allowedUpdates = ['title', 'content', 'interpretation', 'is_public', 'tags', 'scenes', 'image_url', 'style', 'model'];
         const updates: any = {};
 
         Object.keys(body).forEach(key => {

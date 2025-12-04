@@ -1,18 +1,17 @@
-// In-memory store for Refresh Tokens (RTR)
-// Map<UserId, RefreshToken>
-// NOTE: This is ephemeral and will be lost on server restart. Use Redis for production.
+import { storeUserRefreshToken, getUserRefreshToken, deleteUserRefreshToken } from './auth-db';
 
-const refreshTokens = new Map<string, string>();
+// Migrated to DB-backed store (Supabase)
+// Functions are now async
 
-export const storeRefreshToken = (userId: string, token: string) => {
-    refreshTokens.set(userId, token);
+export const storeRefreshToken = async (userId: string, token: string) => {
+    await storeUserRefreshToken(userId, token);
 };
 
-export const validateRefreshToken = (userId: string, token: string) => {
-    const storedToken = refreshTokens.get(userId);
+export const validateRefreshToken = async (userId: string, token: string) => {
+    const { token: storedToken } = await getUserRefreshToken(userId);
     return storedToken === token;
 };
 
-export const revokeRefreshToken = (userId: string) => {
-    refreshTokens.delete(userId);
+export const revokeRefreshToken = async (userId: string) => {
+    await deleteUserRefreshToken(userId);
 };
