@@ -30,24 +30,35 @@ export function middleware(req: NextRequest) {
 
     if (pathname.startsWith('/dashboard')) {
         if (isMobile) {
-            // Mobile user trying to access /dashboard -> redirect to /app
+            // Mobile user trying to access /dashboard -> redirect to appropriate mobile route
+            if (pathname === '/dashboard/shop') return NextResponse.redirect(new URL('/shop', req.url));
+            if (pathname === '/dashboard/profile') return NextResponse.redirect(new URL('/mypage', req.url));
+            if (pathname === '/dashboard/explore') return NextResponse.redirect(new URL('/feed', req.url));
+            if (pathname === '/dashboard/settings') return NextResponse.redirect(new URL('/mypage', req.url));
+
+            // Default fallback
             return NextResponse.redirect(new URL('/app', req.url));
         }
     }
 
     // Protected routes
-    const protectedRoutes = ['/write', '/archive', '/mypage', '/notifications', '/feed', '/dashboard'];
+    const protectedRoutes = ['/write', '/archive', '/mypage', '/notifications', '/feed', '/dashboard', '/admin'];
     const isProtectedRoute = protectedRoutes.some((route) =>
         pathname.startsWith(route)
     );
 
     if (isProtectedRoute && !refreshToken) {
-        // If trying to access dashboard without login, go to desktop login
-        if (pathname.startsWith('/dashboard')) {
+        // If trying to access dashboard/admin without login, go to desktop login
+        if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
             return NextResponse.redirect(new URL('/desktop/login', req.url));
         }
         return NextResponse.redirect(new URL('/login', req.url));
     }
+
+    // Admin Route Protection (Basic check, real check happens in layout/page)
+    // We can't easily check is_admin here without a DB call, which is expensive in middleware.
+    // So we rely on the page/layout to do the final check, or we could decode the JWT if it had the role.
+    // For now, we just ensure they are logged in. The Admin Layout will handle the redirect if not admin.
 
     // Redirect to home (or app home) if logged in and accessing login page
     if ((pathname === '/login' || pathname === '/desktop/login') && refreshToken) {

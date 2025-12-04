@@ -5,7 +5,7 @@ export { supabaseAdmin };
 // Assuming a 'users' table exists in Supabase with:
 // id (uuid, primary key), email (text, unique), password_hash (text), created_at (timestamp), credits (int)
 
-export const createUser = async (email: string, passwordHash: string | null, provider: string = 'email', avatarUrl: string | null = null, nationality: string | null = null, gender: string | null = null, nickname: string | null = null) => {
+export const createUser = async (email: string, passwordHash: string | null, provider: string = 'email', avatarUrl: string | null = null, nationality: string | null = null, gender: string | null = null, nickname: string | null = null, phoneNumber: string | null = null) => {
     const { data, error } = await supabase
         .from('users')
         .insert([{
@@ -16,7 +16,8 @@ export const createUser = async (email: string, passwordHash: string | null, pro
             credits: 3, // Default credits
             nationality,
             gender,
-            nickname: nickname || "Dreamer" // Use provided nickname or default
+            nickname: nickname || "Dreamer", // Use provided nickname or default
+            phone_number: phoneNumber
         }])
         .select()
         .single();
@@ -47,7 +48,7 @@ export const getUserCredits = async (userId: string) => {
 export const getUserProfile = async (userId: string) => {
     const { data, error } = await supabase
         .from('users')
-        .select('id, credits, nationality, gender, email, is_premium, nickname, avatar_url, provider')
+        .select('id, credits, nationality, gender, email, is_premium, nickname, avatar_url, provider, is_admin')
         .eq('id', userId)
         .single();
 
@@ -87,7 +88,7 @@ export const updateUserPremium = async (userId: string, isPremium: boolean) => {
     return { data, error };
 };
 
-export const updateUserProfile = async (userId: string, updates: { nickname?: string; avatar_url?: string }) => {
+export const updateUserProfile = async (userId: string, updates: { nickname?: string; avatar_url?: string; phone_number?: string; nationality?: string; gender?: string }) => {
     const { data, error } = await supabase
         .from('users')
         .update(updates)
@@ -451,5 +452,72 @@ export const getUserStats = async (userId: string) => {
     return {
         totalDreams: totalDreams || 0,
         monthDreams: monthDreams || 0
+    };
+};
+
+// Admin Functions
+
+export const checkIsAdmin = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('users')
+        .select('is_admin')
+        .eq('id', userId)
+        .single();
+
+    return { isAdmin: data?.is_admin || false, error };
+};
+
+export const getAllUsersAdmin = async (page: number = 1, limit: number = 20) => {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, count, error } = await supabaseAdmin
+        .from('users')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+    return { users: data, count, error };
+};
+
+export const getAllPaymentsAdmin = async (page: number = 1, limit: number = 20) => {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, count, error } = await supabaseAdmin
+        .from('payments')
+        .select(`
+            *,
+            users:user_id (email, nickname)
+        `, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+    return { payments: data, count, error };
+};
+
+export const getSystemStatsAdmin = async () => {
+    // Total Users
+    const { count: totalUsers } = await supabaseAdmin
+        .from('users')
+        .select('*', { count: 'exact', head: true });
+
+    // Total Dreams
+    const { count: totalDreams } = await supabaseAdmin
+        .from('dreams')
+        .select('*', { count: 'exact', head: true });
+
+    // Total Revenue (Approximate sum)
+    // Supabase doesn't support SUM easily without RPC, so we might just fetch all successful payments or use an estimated count * avg
+    // For now, let's just count successful payments
+    const { count: successfulPayments } = await supabaseAdmin
+        .from('payments')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'paid');
+
+    return {
+        totalUsers: totalUsers || 0,
+        totalDreams: totalDreams || 0,
+        successfulPayments: successfulPayments || 0
     };
 };

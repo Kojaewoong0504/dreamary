@@ -6,6 +6,7 @@ export async function POST() {
         // Clear the refresh token cookie
         const cookieStore = await cookies();
         cookieStore.delete('refreshToken');
+        cookieStore.delete('accessToken');
 
         return NextResponse.json({ message: 'Logged out successfully' }, { status: 200 });
     } catch (error) {

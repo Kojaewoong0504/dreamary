@@ -24,16 +24,17 @@ export async function POST(request: Request) {
         // Find or Create User in our DB
         let { data: user } = await findUserByEmail(email);
 
-        if (!user) {
-            // Create new user with null password for social login
+        if (!user || !user.nickname) {
+            // User does not exist, return signal to frontend to collect more info
             const avatarUrl = supabaseUser.user_metadata?.avatar_url || null;
             const nickname = supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || "Dreamer";
-            const { data: newUser, error: createError } = await createUser(email, null, 'google', avatarUrl, null, null, nickname);
 
-            if (createError) {
-                return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
-            }
-            user = newUser;
+            return NextResponse.json({
+                needsOnboarding: true,
+                email,
+                avatarUrl,
+                nickname
+            });
         }
 
         // Generate Custom Tokens

@@ -20,6 +20,22 @@ export default function DashboardPage() {
 
         const fetchData = async () => {
             try {
+                // Fetch User Profile
+                const profileRes = await fetch('/api/user/profile');
+                if (profileRes.ok) {
+                    const data = await profileRes.json();
+                    setUser(data.profile);
+
+                    // Admin Redirect Logic
+                    if (data.profile?.is_admin) {
+                        const searchParams = new URLSearchParams(window.location.search);
+                        if (!searchParams.get("ignore_admin")) {
+                            window.location.href = "/admin";
+                            return; // Stop further rendering/fetching if redirecting
+                        }
+                    }
+                }
+
                 // Fetch Dreams
                 const dreamsRes = await fetch('/api/user/dreams');
                 if (dreamsRes.ok) {
@@ -32,13 +48,6 @@ export default function DashboardPage() {
                 if (statsRes.ok) {
                     const data = await statsRes.json();
                     setStats(prev => ({ ...prev, ...data.stats }));
-                }
-
-                // Fetch User Profile
-                const profileRes = await fetch('/api/user/profile');
-                if (profileRes.ok) {
-                    const data = await profileRes.json();
-                    setUser(data.profile);
                 }
 
             } catch (error) {

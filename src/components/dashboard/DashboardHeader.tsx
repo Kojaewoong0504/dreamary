@@ -4,6 +4,7 @@ import { Bell, Search, User, LogOut, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function DashboardHeader() {
     const [user, setUser] = useState<any>(null);
@@ -40,9 +41,29 @@ export default function DashboardHeader() {
                 };
                 fetchCredits();
 
+                // Fetch Notifications
+                const fetchNotifications = async () => {
+                    try {
+                        const res = await fetch('/api/notifications');
+                        if (res.ok) {
+                            const data = await res.json();
+                            setNotifications(data.notifications || []);
+                        }
+                    } catch (e) {
+                        console.error("Failed to fetch notifications", e);
+                    }
+                };
+                fetchNotifications();
+
                 // Listen for credit updates
                 window.addEventListener('credit-update', fetchCredits);
-                return () => window.removeEventListener('credit-update', fetchCredits);
+                // Listen for notification updates (if implemented)
+                window.addEventListener('notification-update', fetchNotifications);
+
+                return () => {
+                    window.removeEventListener('credit-update', fetchCredits);
+                    window.removeEventListener('notification-update', fetchNotifications);
+                };
 
             } catch (error) {
                 console.error("Failed to fetch data", error);
@@ -53,7 +74,8 @@ export default function DashboardHeader() {
 
     const handleLogout = async () => {
         try {
-            await fetch("/api/auth/logout", { method: "POST" });
+            await supabase.auth.signOut(); // Sign out from Supabase client
+            await fetch("/api/auth/logout", { method: "POST" }); // Clear server cookies
             router.push("/");
         } catch (error) {
             console.error("Logout failed", error);
@@ -120,9 +142,21 @@ export default function DashboardHeader() {
                             <div className="max-h-64 overflow-y-auto">
                                 {notifications.length > 0 ? (
                                     notifications.map((notif, i) => (
-                                        <div key={i} className="p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
-                                            <p className="text-sm text-white">{notif.message}</p>
-                                            <p className="text-xs text-white/40 mt-1">{notif.time}</p>
+                                        <div
+                                            key={i}
+                                            onClick={() => {
+                                                if (notif.link) router.push(notif.link);
+                                                setShowNotifications(false);
+                                            }}
+                                            className={`p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer ${!notif.read ? 'bg-white/[0.02]' : ''}`}
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <p className="text-sm text-white">{notif.message}</p>
+                                                {!notif.read && <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />}
+                                            </div>
+                                            <p className="text-xs text-white/40 mt-1">
+                                                {new Date(notif.created_at).toLocaleDateString()} {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
                                         </div>
                                     ))
                                 ) : (
